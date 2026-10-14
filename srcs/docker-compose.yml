@@ -1,0 +1,39 @@
+services:
+  mariadb:
+    build:
+      context: ./requirements/mariadb
+      dockerfile: Dockerfile
+    container_name: mariadb
+    image: mariadb
+    restart: always
+    enviroment:
+      - SQL_DATABASE=${SQL_DATABASE}
+      - SQL_USER=${SQL_USER}
+      - SQL_PASSWORD_FILE=${SQL_PASSWORD_FILE}
+      - SQL_ROOT_PASSWORD_FILE=${SQL_ROOT_PASSWORD_FILE}
+    secrets:
+      - db_password
+      - db_root_password
+    volumes :
+      mariadb_data:/var/lib/mysql
+    networks :
+      -inception_network
+
+volumes :
+  mariadb_data:
+    driver : local
+    driver_opts :
+      type : none
+      o : bind
+      device : /home/manuel/data/mariadb
+
+secrets :
+  db_password :
+    file : ../secrets/db_password.txt
+  db_root_password :
+    file : ../secrets/db_root_password.txt
+
+networks :
+  inception_network :
+    driver : bridge
+

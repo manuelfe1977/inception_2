@@ -6,7 +6,7 @@ services:
     container_name: mariadb
     image: mariadb
     restart: always
-    enviroment:
+    environment:
       - SQL_DATABASE=${SQL_DATABASE}
       - SQL_USER=${SQL_USER}
       - SQL_PASSWORD_FILE=${SQL_PASSWORD_FILE}
@@ -14,12 +14,12 @@ services:
     secrets:
       - db_password
       - db_root_password
-    volumes :
+    volumes:
       - mariadb_data:/var/lib/mysql
-    networks :
+    networks:
       - inception_network
 
-volumes :
+volumes:
   mariadb_data:
     driver: local
     driver_opts:
@@ -27,13 +27,13 @@ volumes :
       o: bind
       device: /home/manuelfe/data/mariadb
 
-secrets :
-  db_password :
-    file : ../secrets/db_password.txt
-  db_root_password :
-    file : ../secrets/db_root_password.txt
+secrets:
+  db_password:
+    file: ../secrets/db_password.txt
+  db_root_password:
+    file: ../secrets/db_root_password.txt
 
-networks :
-  inception_network :
-    driver : bridge
+networks:
+  inception_network:
+    driver: bridge
 

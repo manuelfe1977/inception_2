@@ -15,7 +15,7 @@ services:
       - db_password
       - db_root_password
     volumes :
-      mariadb_data:/var/lib/mysql
+      - mariadb_data:/var/lib/mysql
     networks :
       -inception_network
 

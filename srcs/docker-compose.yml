@@ -17,15 +17,15 @@ services:
     volumes :
       - mariadb_data:/var/lib/mysql
     networks :
-      -inception_network
+      - inception_network
 
 volumes :
   mariadb_data:
-    driver : local
-    driver_opts :
-      type : none
-      o : bind
-      device : /home/manuel/data/mariadb
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/manuelfe/data/mariadb
 
 secrets :
   db_password :

@@ -53,6 +53,12 @@ volumes:
       type: none
       o: bind
       device: /home/manuelfe/data/mariadb
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/manuelfe/data/wordpress
 
 secrets:
   db_password:

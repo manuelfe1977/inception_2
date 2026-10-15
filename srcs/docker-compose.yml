@@ -20,7 +20,8 @@ services:
       - inception_network
 
   wordpress:
-    depends_on: mariadb
+    depends_on:
+      - mariadb
     build:
       context: ./requirements/wordpress
       dockerfile: Dockerfile

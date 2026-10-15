@@ -43,7 +43,7 @@ services:
       - wp_user_password
     volumes:
       - wordpress_data:/var/www/wordpress
-    network:
+    networks:
       - inception_network
 
 volumes:

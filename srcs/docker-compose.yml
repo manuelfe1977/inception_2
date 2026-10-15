@@ -28,7 +28,7 @@ services:
     container_name: wordpress
     image: wordpress
     restart: always
-    enviroment:
+    environment:
       - SQL_DATABASE=${SQL_DATABASE}
       - SQL_USER=${SQL_USER}
       - SQL_PASSWORD_FILE=${SQL_PASSWORD_FILE}

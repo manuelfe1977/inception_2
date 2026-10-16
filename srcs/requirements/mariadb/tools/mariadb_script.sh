@@ -30,5 +30,4 @@ if [ ! -d "/var/lib/mysql/$SQL_DATABASE" ]; then
 
 	mysqladmin -u root -p${SQL_ROOT_PASSWORD_FILE} shutdown
 fi
-
 exec mysqld --user=mysql

@@ -35,7 +35,10 @@ services:
       - WP_URL=${WP_URL}
       - WP_TITLE=${WP_TITLE}
       - WP_ADMIN_USER=${WP_ADMIN_USER}
+      - WP_ADMIN_EMAIL=${WP_ADMIN_EMAIL}
       - WP_ADMIN_PASSWORD_FILE=${WP_ADMIN_PASSWORD_FILE}
+      - WP_USER=${WP_USER}
+      - WP_USER_EMAIL=${WP_USER_EMAIL}
       - WP_USER_PASSWORD_FILE=${WP_USER_PASSWORD_FILE}
     secrets:
       - db_password
@@ -90,4 +93,3 @@ secrets:
 networks:
   inception_network:
     driver: bridge
-

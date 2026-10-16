@@ -13,9 +13,12 @@ build: make_dirs
 	@docker compose -f $(COMPOSE_FILE) build
 
 make_dirs:
-	@@mkdir -p $(DATA_PATH)/mariadb
-	@@mkdir -p $(DATA_PATH)/wordpress
+	@mkdir -p $(DATA_PATH)/mariadb
+	@mkdir -p $(DATA_PATH)/wordpress
 	@echo "Directorios de datos verificados en $(DATA_PATH)"
+
+clean:
+	@docker compose -f $(COMPOSE_FILE) down
 
 down:
 	@echo "Limpiando contenedores ...."

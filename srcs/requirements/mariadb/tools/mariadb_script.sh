@@ -1,3 +1,5 @@
+#!/bin/bash
+
 get_secret() {
     local file_var_name="${1}_FILE"
     # Si la variable _FILE existe y apunta a un archivo real, léelo

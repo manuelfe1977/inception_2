@@ -15,7 +15,7 @@ WP_USER_PASSWORD=$(get_secret "WP_USER_PASSWORD")
 
 
 echo "Esperando conexión con MariaDB..."
-until mariadb-admin ping -h"mariadb" -u"$SQL_USER" -p"$DB_PASSWORD" --silent; do
+until mariadb-admin ping -h"mariadb" -u"$SQL_USER" -p"$SQL_PASSWORD" --silent; do
     sleep 2
 done
 echo "Conexión con MariaDB establecida."
@@ -32,7 +32,7 @@ if [ ! -f "wp-config.php" ]; then
     wp config create \
         --dbname="$SQL_DATABASE" \
         --dbuser="$SQL_USER" \
-        --dbpass="$DB_PASSWORD" \
+        --dbpass="$SQL_PASSWORD" \
         --dbhost="mariadb:3306" \
         --allow-root
 

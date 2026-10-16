@@ -19,9 +19,9 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 RUN mkdir -p /var/www/wordpress /run/php
 
 # Copiar el script de inicio
-COPY tools/auto_config.sh /usr/local/bin/auto_config.sh
-RUN chmod +x /usr/local/bin/auto_config.sh
+COPY tools/wp_script.sh /usr/local/bin/wp_script.sh
+RUN chmod +x /usr/local/bin/wp_script.sh
 
 WORKDIR /var/www/wordpress
 
-ENTRYPOINT ["/usr/local/bin/auto_config.sh"]
+ENTRYPOINT ["/usr/local/bin/wp_script.sh"]

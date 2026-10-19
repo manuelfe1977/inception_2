@@ -1,110 +1,114 @@
-*Este proyecto ha sido desarrollado como parte del currículo de 42 por manuelfe.*
+*This project has been created as part of the 42 curriculum by manuelfe.*
 
 # Inception
 
-He diseñado e implementado una infraestructura web segura y multicontenedor utilizando **Docker Compose**. El objetivo de este proyecto ha sido levantar localmente un servidor NGINX con soporte TLS exclusivo, un entorno WordPress servido mediante PHP-FPM y una base de datos MariaDB, aislando cada componente en redes y volúmenes dedicados bajo las directrices estrictas del sujeto de 42.
+I designed and implemented a secure, multi-container web infrastructure using **Docker Compose**. The primary objective of this project was to locally deploy an NGINX server with exclusive TLS support, a WordPress instance driven by PHP-FPM, and a MariaDB database—all strictly isolated within dedicated networks and protected volumes according to 42 school requirements.
 
 ---
 
-## 📌 Descripción del Proyecto
+## 📌 Project Overview
 
-Inception representa para mí el proyecto central de la rama de Sistemas (SysAdmin) en 42. Su propósito fundamental ha sido enseñarme a diseñar, configurar y desplegar una arquitectura de microservicios profesional, modular y completamente aislada utilizando Docker.
+For me, Inception represents the cornerstone project of the System Administration (SysAdmin) branch at 42. Its main goal is to teach how to design, configure, and orchestrate a professional, modular, and completely isolated microservices architecture using Docker.
 
-En este proyecto asumí la regla estricta de **no utilizar imágenes preconfiguradas de Docker Hub** (como las imágenes oficiales de WordPress o MariaDB). En su lugar, construí cada contenedor desde cero mediante `Dockerfiles` basados en Debian, instalando y configurando los servicios de manera nativa con mis propios scripts de Bash. Toda la infraestructura se orquesta a través de un único archivo `docker-compose.yml` ejecutado dentro de una máquina virtual.
+A strict requirement of this project was **never to use pre-built images from Docker Hub** (such as official WordPress or MariaDB images). Instead, I built every container from scratch using custom `Dockerfiles` based on Debian, installing and configuring all services natively through custom Bash scripts. The entire stack is orchestrated by a single `docker-compose.yml` file running inside a dedicated Virtual Machine.
 
-Mi arquitectura se compone de tres contenedores independientes conectados mediante una red privada virtual tipo bridge:
+My infrastructure consists of three independent containers interconnected via a private bridge network:
 
-* **NGINX (El punto de entrada seguro):** Es el único contenedor que expone puertos hacia el exterior (puerto 443). Actúa como proxy inverso y procesa exclusivamente conexiones cifradas con TLS v1.2 o TLS v1.3. He deshabilitado y prohibido por completo el tráfico en texto plano por HTTP (puerto 80).
-* **WordPress + PHP-FPM (El procesador de contenidos):** Aloja el código fuente y los recursos del CMS. Dado que NGINX no interpreta PHP de forma nativa, canalizo las peticiones dinámicas hacia este contenedor a través del protocolo FastCGI en el puerto interno 9000.
-* **MariaDB (La base de datos relacional):** Almacena de forma persistente los posts, usuarios, metadatos y configuraciones del sitio. Se encuentra completamente aislado en la red interna (puerto 3306), sin exponer ningún puerto al anfitrión físico.
+* **NGINX (The Secure Entry Point):** The only container exposing ports to the outside world (port 443). It acts as a reverse proxy and exclusively accepts secure encrypted connections via TLS v1.2 or TLS v1.3. Plain HTTP traffic (port 80) is strictly prohibited.
+* **WordPress + PHP-FPM (The Application Engine):** Hosts the website source code and CMS assets. Since NGINX does not natively interpret PHP code, I route all dynamic requests to this container via FastCGI on internal port 9000.
+* **MariaDB (The Relational Database):** Persistently stores all users, posts, comments, and site configurations. It remains entirely isolated within the internal Docker network (port 3306) and is never accessible from outside the virtual machine.
 
 ---
 
-## 🧠 Conceptos Clave Aprendidos y Aplicados
+## 🧠 Key Concepts Learned & Implemented
 
-Durante el desarrollo de esta infraestructura profundicé en los fundamentos teóricos y prácticos que diferencian una solución en producción de un entorno de pruebas:
+While engineering this stack, I explored foundational concepts that distinguish production-grade deployments from basic development environments:
 
-### 1. Máquinas Virtuales vs. Docker
-Ambas tecnologías resuelven problemas de aislamiento, portabilidad y límites de recursos, pero apliqué Docker comprendiendo sus contrastes frente a la virtualización tradicional:
+### 1. Virtual Machines vs. Docker
 
-| Característica | Máquina Virtual (VM) | Contenedor Docker |
+Both technologies provide isolation, reproducibility, and resource management, but I applied Docker appreciating its core differences from full-system virtualization:
+
+| Feature | Virtual Machine (VM) | Docker Container |
 |---|---|---|
-| **Arquitectura** | Incluye un sistema operativo invitado completo con su propio kernel y controladores. | Comparte el kernel del sistema anfitrión, empaquetando solo binarios y librerías necesarias. |
-| **Rendimiento** | Tarda minutos en arrancar e impone un alto consumo constante de RAM y CPU. | Se inicializa en segundos con un consumo mínimo de recursos. |
-| **Tamaño en disco** | Requiere imágenes pesadas (habitualmente entre 10 GB y 20 GB). | Utiliza capas optimizadas que oscilan entre 50 MB y 250 MB. |
+| **Architecture** | Runs a complete guest operating system with its own kernel, device drivers, and system services. | Shares the host kernel, packaging only binaries, runtime dependencies, and application code. |
+| **Startup & Speed** | Takes minutes to boot as it emulates physical hardware and boots an entire OS. | Boots in seconds with negligible overhead and minimal memory consumption. |
+| **Disk Footprint** | Requires heavy virtual disk images (typically 10 GB to 20 GB). | Uses lightweight, optimized layers (usually 50 MB to 250 MB). |
 
-### 2. Docker Secrets vs. Variables de Entorno
-Comprendí que la seguridad de las credenciales depende del mecanismo de inyección:
+### 2. Docker Secrets vs. Environment Variables
 
-* **Variables de entorno (`.env`):** Resultan idóneas para parámetros no críticos (nombres de base de datos, URLs o títulos), pero exponen datos confidenciales si se usan para contraseñas. Permanecen visibles en texto plano ante un comando `docker inspect` o al listar el entorno con `env`.
-* **Docker Secrets:** Protegen la información crítica montando archivos temporales directamente sobre un sistema en memoria RAM (`tmpfs`) dentro de `/run/secrets/`. De este modo, evito que las contraseñas se escriban en el disco duro o queden expuestas en los metadatos de los contenedores.
+I prioritized credentials security based on how sensitive data is exposed at runtime:
 
-### 3. Redes Docker (Bridge) vs. Red del Host
-* **Docker Network (`bridge`):** Fue mi elección para el proyecto. Docker genera un conmutador virtual que asigna subredes e IPs privadas a cada servicio. Esto me permite aplicar aislamiento estricto, exigir mapeo selectivo de puertos y aprovechar la resolución de nombres DNS interna de Docker.
-* **Host Network:** Elimina el aislamiento de red haciendo que el contenedor comparta directamente las interfaces y puertos del host, lo cual descarta la segmentación exigida en esta arquitectura.
+* **Environment Variables (`.env`):** Well-suited for non-sensitive configurations (database names, site URLs, usernames), but unsafe for credentials. Any inspect command (`docker inspect`) or inspection inside the container (`env`) reveals passwords in plain text, leaving traces across container metadata.
+* **Docker Secrets:** Specifically built to protect critical information. Docker mounts secrets into a temporary, in-memory filesystem (`tmpfs`) at `/run/secrets/`. Passwords never touch container storage, do not persist to disk, and are never logged to container metadata.
+
+### 3. Docker Bridge Network vs. Host Network
+
+* **Docker Network (`bridge`):** The architecture of choice for this project. Docker instantiates a software bridge, assigning a private subnet and internal IPs to containers. This guarantees full port isolation, explicit forwarding, and internal DNS resolution by service name.
+* **Host Network:** Drops container network isolation completely, binding container services directly to the host's physical network interfaces. This removes the segmentation mandated by the project guidelines.
 
 ### 4. Docker Volumes vs. Bind Mounts
-* **Bind Mounts:** Mapean una ruta exacta del sistema de archivos del host (`/home/manuelfe/data/...`) dentro del contenedor. Los utilicé para cumplir con la persistencia explícita en las carpetas obligatorias del sujeto.
-* **Docker Volumes:** Son gestionados completamente por el motor de Docker en rutas internas del sistema, ofreciendo mayor portabilidad cuando no se requiere acceso manual a las rutas del anfitrión.
+
+* **Bind Mounts:** Explicitly attach a precise directory on the host (`/home/manuelfe/data/...`) directly into the container. I used bind mounts to satisfy the project's strict requirement for persistent data storage on host directories.
+* **Docker Volumes:** Managed exclusively by the Docker daemon within `/var/lib/docker/volumes/`, offering seamless portability when direct access to physical host paths is not required.
 
 ---
 
-## 🚀 Guía de Instalación y Puesta en Marcha
+## 🚀 Setup & Deployment Guide
 
-Detallo a continuación el procedimiento paso a paso para desplegar mi entorno en la máquina virtual.
+Follow these steps sequentially inside your VM to clone, build, and deploy the entire environment:
 
-### 1. Clonar el repositorio
-Accedo a la máquina virtual por SSH, me sitúo en el directorio de usuario y clono el proyecto:
+### 1. Clone the repository
+Connect to your VM via SSH, navigate to your home directory, and clone the repository:
 ```bash
-git clone <URL_DE_TU_REPOSITORIO_INCEPTION> inception
+git clone <YOUR_INCEPTION_REPOSITORY_URL> inception
 cd inception
 ```
 
-### 2. Crear los directorios físicos persistentes
-Creo las rutas del host donde se almacenarán los datos persistentes de la base de datos y de WordPress:
+### 2. Prepare physical storage directories
+Create the required host bind-mount directories and ensure your user owns them to prevent permission denied errors:
 ```bash
 sudo mkdir -p /home/manuelfe/data/mariadb
 sudo mkdir -p /home/manuelfe/data/wordpress
 sudo chown -R $USER:$USER /home/manuelfe/data
 ```
 
-### 3. Configurar variables de entorno y secretos
-Coloco el archivo `.env` y los secretos en las rutas correspondientes del directorio `srcs/`:
-* `srcs/.env` (variables públicas: URLs, nombres de base de datos, usuarios).
-* `srcs/secrets/` (archivos individuales con las contraseñas de MariaDB y credenciales de WordPress).
+### 3. Configure environment variables & secrets
+Set up your environment variables and secrets inside the `srcs/` directory:
+* `srcs/.env` (public configurations: domain, database names, administrative usernames).
+* `srcs/secrets/` (plaintext secret files containing database root/user passwords and WordPress user passwords).
 
-### 4. Compilar y levantar la infraestructura
-Ejecuto la regla principal de mi `Makefile`:
+### 4. Build and run the infrastructure
+Launch the stack using the provided Makefile:
 ```bash
 make
 ```
 
-### 5. Verificar el estado de los servicios
-Compruebo que los tres contenedores estén en ejecución y con sus estados de salud correctos:
+### 5. Verify running containers
+Ensure all three containers are healthy and running:
 ```bash
 docker ps
 ```
 
-### 6. Acceso al sitio web
-Para acceder desde el navegador de mi máquina anfitriona física, vinculo el dominio a la dirección IP de mi máquina virtual.
+### 6. Access the website
+To access the website from your host machine's browser, map your VM's IP address to your domain name.
 
-Edito el archivo `/etc/hosts` en el anfitrión físico:
+Edit `/etc/hosts` on your host machine:
 ```text
-<IP_DE_TU_MAQUINA_VIRTUAL>       manuelfe.42.fr
+<YOUR_VM_IP_ADDRESS>       manuelfe.42.fr
 ```
 
-Accedo desde el navegador a la URL segura:
+Open your browser and navigate to:
 ```text
 https://manuelfe.42.fr
 ```
 
-*(Al tratarse de un certificado TLS autofirmado generado con OpenSSL, acepto la advertencia de seguridad en la primera visita).*
+*(Because the self-signed SSL certificate was generated locally using OpenSSL, accept the security bypass warning upon your first visit).*
 
 ---
 
-## 📚 Referencias y Documentación
+## 📚 References & Documentation
 
 * [Inception Tutorial - Medium (@imyzf)](https://medium.com/@imyzf/inception-3979046d90a0)
 * [Docker Nginx + WordPress + MariaDB Architecture Guide (dev.to)](https://dev.to/alejiri/docker-nginx-wordpress-mariadb-tutorial-inception42-1eok)
-* [Documentación oficial de Docker Compose](https://docs.docker.com/compose/)
-* [Documentación oficial de NGINX con FastCGI y TLS](https://nginx.org/en/docs/)
+* [Official Docker Compose Documentation](https://docs.docker.com/compose/)
+* [Official NGINX FastCGI & TLS Documentation](https://nginx.org/en/docs/)

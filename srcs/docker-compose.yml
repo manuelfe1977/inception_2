@@ -68,17 +68,9 @@ services:
 
 volumes:
   mariadb_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /home/manuelfe/data/mariadb
+    name: mariadb_data
   wordpress_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /home/manuelfe/data/wordpress
+    name: wordpress_data
 
 secrets:
   db_password:
